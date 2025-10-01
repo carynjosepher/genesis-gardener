@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Square } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Mic, Square, Keyboard, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -9,8 +10,10 @@ interface VoiceCaptureProps {
 }
 
 export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
+  const [mode, setMode] = useState<"choice" | "voice" | "text">("choice");
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [textInput, setTextInput] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
@@ -90,12 +93,91 @@ export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
     }
   };
 
+  const handleTextSubmit = () => {
+    if (textInput.trim()) {
+      onTranscript(textInput);
+    }
+  };
+
+  if (mode === "choice") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+        <div className="text-center space-y-4">
+          <h2 className="text-4xl font-bold text-white">Ready to Capture</h2>
+          <p className="text-xl text-ocean-light max-w-md mx-auto">
+            Choose how you'd like to capture your note
+          </p>
+        </div>
+
+        <div className="flex gap-6">
+          <Button
+            onClick={() => setMode("voice")}
+            variant="hero"
+            className="w-40 h-40 rounded-2xl flex-col gap-4 text-white shadow-[var(--shadow-ocean)] hover:scale-105 transition-all duration-300"
+          >
+            <Mic className="w-12 h-12" />
+            <span className="text-lg font-semibold">Voice</span>
+          </Button>
+
+          <Button
+            onClick={() => setMode("text")}
+            variant="hero"
+            className="w-40 h-40 rounded-2xl flex-col gap-4 text-white shadow-[var(--shadow-ocean)] hover:scale-105 transition-all duration-300"
+          >
+            <Keyboard className="w-12 h-12" />
+            <span className="text-lg font-semibold">Text</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "text") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-fade-in">
+        <div className="text-center space-y-4">
+          <h2 className="text-4xl font-bold text-white">Type Your Note</h2>
+          <p className="text-xl text-ocean-light max-w-md mx-auto">
+            Write down what you want to remember
+          </p>
+        </div>
+
+        <div className="w-full max-w-2xl space-y-4">
+          <Textarea
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Type your note here..."
+            className="min-h-[200px] bg-white/10 border-white/20 text-white placeholder:text-ocean-light text-lg resize-none"
+          />
+          <div className="flex justify-between gap-4">
+            <Button
+              onClick={() => setMode("choice")}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              Back
+            </Button>
+            <Button
+              onClick={handleTextSubmit}
+              disabled={!textInput.trim()}
+              variant="hero"
+              className="flex items-center gap-2"
+            >
+              Continue
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-fade-in">
       <div className="text-center space-y-4">
-        <h2 className="text-4xl font-bold text-white">Ready to Capture</h2>
+        <h2 className="text-4xl font-bold text-white">Voice Capture</h2>
         <p className="text-xl text-ocean-light max-w-md mx-auto">
-          Tap the mic to record your note. We'll guide you through the rest.
+          Tap the mic to record your note
         </p>
       </div>
 
@@ -127,6 +209,16 @@ export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
           </div>
         )}
       </div>
+
+      {!isRecording && !isProcessing && (
+        <Button
+          onClick={() => setMode("choice")}
+          variant="outline"
+          className="border-white/20 text-white hover:bg-white/10"
+        >
+          Back
+        </Button>
+      )}
 
       {isRecording && (
         <p className="text-accent text-lg font-medium animate-pulse">
