@@ -1,0 +1,143 @@
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Mic, Square } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+interface VoiceCaptureProps {
+  onTranscript: (text: string) => void;
+}
+
+export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const { toast } = useToast();
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+        await processAudio(audioBlob);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      toast({
+        title: "Microphone Error",
+        description: "Could not access microphone. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsProcessing(true);
+    }
+  };
+
+  const processAudio = async (audioBlob: Blob) => {
+    try {
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      reader.onloadend = async () => {
+        const base64Audio = reader.result?.toString().split(",")[1];
+
+        if (!base64Audio) {
+          throw new Error("Failed to convert audio");
+        }
+
+        // Call edge function to transcribe
+        const { data, error } = await supabase.functions.invoke("transcribe-audio", {
+          body: { audio: base64Audio },
+        });
+
+        if (error) throw error;
+
+        if (data?.text) {
+          onTranscript(data.text);
+        } else {
+          throw new Error("No transcription returned");
+        }
+      };
+    } catch (error) {
+      console.error("Error processing audio:", error);
+      toast({
+        title: "Processing Error",
+        description: "Failed to transcribe audio. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+      <div className="text-center space-y-4">
+        <h2 className="text-4xl font-bold text-white">Ready to Capture</h2>
+        <p className="text-xl text-ocean-light max-w-md mx-auto">
+          Tap the mic to record your note. We'll guide you through the rest.
+        </p>
+      </div>
+
+      <div className="relative">
+        {!isRecording && !isProcessing && (
+          <Button
+            onClick={startRecording}
+            size="xl"
+            variant="hero"
+            className="w-32 h-32 rounded-full text-white shadow-[var(--shadow-ocean)] hover:scale-110 transition-all duration-300"
+          >
+            <Mic className="w-16 h-16" />
+          </Button>
+        )}
+
+        {isRecording && (
+          <Button
+            onClick={stopRecording}
+            size="xl"
+            className="w-32 h-32 rounded-full bg-destructive hover:bg-destructive/90 text-white animate-pulse"
+          >
+            <Square className="w-16 h-16" />
+          </Button>
+        )}
+
+        {isProcessing && (
+          <div className="w-32 h-32 rounded-full bg-accent/20 flex items-center justify-center">
+            <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+      </div>
+
+      {isRecording && (
+        <p className="text-accent text-lg font-medium animate-pulse">
+          Recording... Tap to stop
+        </p>
+      )}
+      {isProcessing && (
+        <p className="text-accent text-lg font-medium">
+          Processing your audio...
+        </p>
+      )}
+    </div>
+  );
+};
