@@ -40,6 +40,7 @@ All colors MUST be HSL.
 
     /* Maritime theme colors */
     --ocean-deep: 220 60% 25%;
+    --ocean-mid: 200 70% 35%;
     --ocean-bright: 190 75% 50%;
     --ocean-light: 190 60% 90%;
     --wave-gradient: linear-gradient(135deg, hsl(220 60% 25%), hsl(200 70% 35%));
@@ -93,6 +94,7 @@ All colors MUST be HSL.
     --ring: 190 75% 50%;
     
     --ocean-deep: 220 50% 15%;
+    --ocean-mid: 200 60% 25%;
     --ocean-bright: 190 75% 50%;
     --ocean-light: 190 40% 20%;
     --wave-gradient: linear-gradient(135deg, hsl(220 50% 15%), hsl(200 60% 25%));
