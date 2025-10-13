@@ -19,7 +19,7 @@ const questions = [
   },
   {
     id: "why",
-    title: "Why does it matter?",
+    title: "Why Log This?",
     placeholder: "Why is this important or interesting?",
   },
   {
