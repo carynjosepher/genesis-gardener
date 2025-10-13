@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Chaos Captain',
   webDir: 'dist',
   server: {
-    url: 'YOUR_PREVIEW_URL_HERE',
+    url: 'https://8f01d337-6d97-4202-89ba-b7d120c6f8b0.lovableproject.com?forceHideBadge=true',
     cleartext: true
   }
 };
