@@ -3,7 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, X } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowRight, X, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import type { CaptureData } from "@/types/capture";
 
 interface QuestionFlowProps {
@@ -38,6 +42,8 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
   });
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [selectedReminder, setSelectedReminder] = useState<string>("");
+  const [customDate, setCustomDate] = useState<Date>();
 
   const question = questions[currentQuestion];
   const progress = ((currentQuestion + 1) / questions.length) * 100;
@@ -46,10 +52,14 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
+      const reminderValue = selectedReminder === "Custom" && customDate
+        ? format(customDate, "PPP")
+        : selectedReminder;
+      
       onComplete({
         what: answers.what,
         why: answers.why,
-        when: answers.when,
+        when: reminderValue,
         tags,
       });
     }
@@ -92,9 +102,16 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
     setTags(tags.filter((t) => t !== tag));
   };
 
+  const handleReminderSelect = (option: string) => {
+    setSelectedReminder(option);
+    if (option !== "Custom") {
+      setCustomDate(undefined);
+    }
+  };
+
   const canProceed =
     question.id === "tags" ||
-    question.id === "when" ||
+    (question.id === "when" && (selectedReminder === "I'll find it when I need it" || (selectedReminder === "Custom" ? !!customDate : !!selectedReminder))) ||
     (question.id !== "tags" && question.id !== "when" && answers[question.id]?.trim().length > 0);
 
   return (
@@ -145,6 +162,55 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
                 ))}
               </div>
             )}
+          </div>
+        ) : question.id === "when" ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              {["Tomorrow", "Next Week", "Next Month", "I'll find it when I need it"].map((option) => (
+                <Button
+                  key={option}
+                  onClick={() => handleReminderSelect(option)}
+                  variant={selectedReminder === option ? "hero" : "outline"}
+                  className={cn(
+                    "h-auto py-4 px-6 text-left justify-start",
+                    selectedReminder === option
+                      ? ""
+                      : "border-white/20 text-white hover:bg-white/10"
+                  )}
+                >
+                  {option}
+                </Button>
+              ))}
+            </div>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={selectedReminder === "Custom" ? "hero" : "outline"}
+                  className={cn(
+                    "w-full h-auto py-4 px-6 justify-start text-left font-normal",
+                    selectedReminder === "Custom"
+                      ? ""
+                      : "border-white/20 text-white hover:bg-white/10",
+                    !customDate && selectedReminder === "Custom" && "text-ocean-light"
+                  )}
+                  onClick={() => setSelectedReminder("Custom")}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {customDate ? format(customDate, "PPP") : "Custom Date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customDate}
+                  onSelect={setCustomDate}
+                  initialFocus
+                  disabled={(date) => date < new Date()}
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         ) : (
           <Textarea
