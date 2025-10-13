@@ -123,6 +123,15 @@ export const VoiceCapture = ({
   }
   if (mode === "text") {
     return <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-fade-in">
+        <div className="w-full max-w-2xl space-y-2">
+          <div className="flex justify-between text-sm text-ocean-light">
+            <span>step 1 of 4</span>
+            <span>25%</span>
+          </div>
+          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-accent transition-all duration-500 ease-out" style={{ width: '25%' }} />
+          </div>
+        </div>
         <div className="text-center space-y-4">
           <h2 className="text-4xl font-bold text-white">Tell The Captain</h2>
           <p className="text-xl text-ocean-light max-w-md mx-auto">Leave a note for your Future Self</p>
