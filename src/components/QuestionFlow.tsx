@@ -84,7 +84,7 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
       {/* Progress Bar */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-ocean-light">
-          <span>step {currentQuestion + 1} of {questions.length}</span>
+          <span>step {currentQuestion + 2} of {questions.length + 1}</span>
           <span>{Math.round(progress)}%</span>
         </div>
         <div className="h-2 bg-white/10 rounded-full overflow-hidden">
