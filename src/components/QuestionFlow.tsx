@@ -175,7 +175,7 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
                     "h-auto py-4 px-6 text-left justify-start",
                     selectedReminder === option
                       ? ""
-                      : "border-white/20 text-white hover:bg-white/10"
+                      : "border-white/20 bg-white/10 text-white hover:bg-white/20"
                   )}
                 >
                   {option}
@@ -191,8 +191,8 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
                     "w-full h-auto py-4 px-6 justify-start text-left font-normal",
                     selectedReminder === "Custom"
                       ? ""
-                      : "border-white/20 text-white hover:bg-white/10",
-                    !customDate && selectedReminder === "Custom" && "text-ocean-light"
+                      : "border-white/20 bg-white/10 text-white hover:bg-white/20",
+                    !customDate && selectedReminder === "Custom" && "text-white"
                   )}
                   onClick={() => setSelectedReminder("Custom")}
                 >
