@@ -29,25 +29,28 @@ export const MarkdownOutput = ({
   };
   const generateMarkdown = () => {
     const now = new Date();
-    const timestamp = now.toISOString();
     const dateStr = now.toLocaleDateString("en-US", {
-      weekday: "long",
       year: "numeric",
-      month: "long",
-      day: "numeric"
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
     });
-    let md = `# ${captureData.what.split("\n")[0] || "Note"}\n\n`;
-    md += `**Captured:** ${dateStr}\n\n`;
-    md += `## What\n\n${captureData.what}\n\n`;
-    md += `## Why It Matters\n\n${captureData.why}\n\n`;
-    md += `## When to Revisit\n\n${captureData.when}\n\n`;
+    
+    let md = `${captureData.what.split("\n")[0] || "Note"}\n\n`;
+    md += `${captureData.what}\n\n`;
+    md += `${captureData.why}\n\n`;
+    
     if (captureData.tags.length > 0) {
-      md += `## Tags\n\n`;
-      md += captureData.tags.map(tag => `\`${tag}\``).join(" · ");
+      md += captureData.tags.map(tag => `#${tag}`).join(" ");
       md += "\n\n";
     }
-    md += `---\n\n`;
-    md += `*Created with Chaos Captain* 🎯\n`;
+    
+    if (captureData.when) {
+      md += `Reminder: ${captureData.when}\n\n`;
+    }
+    
+    md += `Captured on ${dateStr}`;
     setMarkdown(md);
   };
   const handleCopy = async () => {
@@ -141,15 +144,53 @@ export const MarkdownOutput = ({
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-white">Note Complete!</h2>
         <p className="text-ocean-light">
-          Here's your beautifully formatted markdown note
+          Ready to save to your notes
         </p>
       </div>
 
-      {/* Markdown Preview */}
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-[var(--shadow-card)]">
-        <pre className="text-sm text-white font-mono whitespace-pre-wrap overflow-x-auto">
-          {markdown}
-        </pre>
+      {/* Note Preview - Apple Notes Style */}
+      <div className="bg-white rounded-2xl p-6 shadow-[var(--shadow-card)] min-h-[300px]">
+        <div className="space-y-4">
+          {/* Title */}
+          <h1 className="text-2xl font-bold text-gray-900">
+            {captureData.what.split("\n")[0] || "Note"}
+          </h1>
+          
+          {/* Body */}
+          <div className="text-gray-800 space-y-3">
+            <p className="whitespace-pre-wrap">{captureData.what}</p>
+            <p className="whitespace-pre-wrap">{captureData.why}</p>
+          </div>
+          
+          {/* Tags */}
+          {captureData.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {captureData.tags.map((tag, index) => (
+                <span key={index} className="text-blue-600 text-sm">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {/* Reminder */}
+          {captureData.when && (
+            <div className="text-sm text-gray-600 pt-2">
+              <span className="font-medium">Reminder:</span> {captureData.when}
+            </div>
+          )}
+          
+          {/* Captured Date */}
+          <div className="text-xs text-gray-500 pt-4 border-t border-gray-200">
+            Captured on {new Date().toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit"
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Actions */}
