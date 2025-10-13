@@ -128,16 +128,15 @@ export const MarkdownOutput = ({
   };
 
   const handleSendToAppleNotes = () => {
-    // iOS Shortcuts URL scheme
-    const title = encodeURIComponent(captureData.what.split("\n")[0] || "Note");
-    const body = encodeURIComponent(markdown);
+    // iOS Shortcuts URL scheme with x-callback-url
+    const encodedText = encodeURIComponent(markdown);
     
-    // Try to open Shortcuts app with the note data
-    window.location.href = `shortcuts://run-shortcut?name=Create%20Note&input=text&text=${body}`;
+    // Use the Chaos Captain to Notes shortcut with URL-encoded text
+    window.location.href = `shortcuts://x-callback-url/run-shortcut?name=Chaos%20Captain%20to%20Notes&input=${encodedText}`;
     
     toast({
-      title: "Opening Shortcuts",
-      description: "Create a shortcut to save to Apple Notes",
+      title: "Sending to Notes",
+      description: "Opening shortcut to save your note",
     });
   };
   return <div className="space-y-6 animate-fade-in">
