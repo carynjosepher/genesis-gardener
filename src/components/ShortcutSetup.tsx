@@ -13,32 +13,14 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
   const { toast } = useToast();
 
   const handleInstallShortcut = () => {
-    // Generate a shortcut that can be imported
-    // Using a data URL approach for a basic shortcut
-    const shortcutData = {
-      name: "Save to Notes from Chaos Captain",
-      actions: [
-        {
-          type: "receiveText",
-          parameters: { "WFTextActionText": "Shortcut Input" }
-        },
-        {
-          type: "note",
-          parameters: { "WFNote": "Shortcut Input" }
-        }
-      ]
-    };
-    
-    // For iOS, we'll open shortcuts app with instructions
-    // Since we can't programmatically create shortcuts from web,
-    // we provide the URL scheme to open the gallery or app
-    const shortcutUrl = "shortcuts://";
+    // Open the iCloud Shortcut link to install "Chaos Captain to Notes"
+    const shortcutUrl = "shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=This%20is%20a%20test";
     
     window.location.href = shortcutUrl;
     
     toast({
-      title: "Opening Shortcuts App",
-      description: "Follow the steps to create your shortcut",
+      title: "Opening Shortcut",
+      description: "Install the Chaos Captain to Notes shortcut",
     });
     
     setStep(2);
@@ -117,7 +99,7 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
                 className="w-full"
               >
                 <Book className="w-5 h-5 mr-2" />
-                Open Shortcuts App
+                Connect to Notes
               </Button>
               
               <button
