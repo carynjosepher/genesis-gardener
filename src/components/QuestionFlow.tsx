@@ -14,7 +14,7 @@ interface QuestionFlowProps {
 const questions = [
   {
     id: "what",
-    title: "What happened?",
+    title: "Tell The Captain",
     placeholder: "Describe what you want to remember...",
   },
   {
@@ -24,12 +24,12 @@ const questions = [
   },
   {
     id: "when",
-    title: "When should you revisit this?",
+    title: "When Should Be Reminded?",
     placeholder: "e.g., Next week, In 3 months, Never",
   },
   {
     id: "tags",
-    title: "Add tags (optional)",
+    title: "Add Tags (optional)",
     placeholder: "Press Enter to add tags",
   },
 ];
