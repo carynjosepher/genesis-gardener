@@ -14,7 +14,8 @@ interface QuestionFlowProps {
 const questions = [
   {
     id: "why",
-    title: "Why Log This?",
+    title: "Note Title",
+    subtitle: "How do you want to remember this?",
     placeholder: "Why is this important or interesting?",
   },
   {
@@ -97,7 +98,12 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
 
       {/* Question Card */}
       <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 shadow-[var(--shadow-card)]">
-        <h2 className="text-3xl font-bold text-white mb-6">{question.title}</h2>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-white mb-2">{question.title}</h2>
+          {question.subtitle && (
+            <p className="text-ocean-light text-lg">{question.subtitle}</p>
+          )}
+        </div>
 
         {question.id === "tags" ? (
           <div className="space-y-4">
