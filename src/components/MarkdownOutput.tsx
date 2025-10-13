@@ -98,7 +98,7 @@ export const MarkdownOutput = ({
 
       {/* Actions */}
       <div className="flex flex-wrap gap-3 justify-center">
-        <Button onClick={handleCopy} variant="outline" className="border-white/20 text-white hover:bg-white/10">
+        <Button onClick={handleCopy} variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
           {copied ? <>
               <Check className="w-4 h-4 mr-2" />
               Copied!
@@ -107,11 +107,11 @@ export const MarkdownOutput = ({
               Copy
             </>}
         </Button>
-        <Button onClick={handleDownload} variant="outline" className="border-white/20 text-white hover:bg-white/10">
+        <Button onClick={handleDownload} variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
           <Download className="w-4 h-4 mr-2" />
           Download
         </Button>
-        <Button onClick={handleEmail} variant="outline" className="border-white/20 text-white hover:bg-white/10">
+        <Button onClick={handleEmail} variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
           <Mail className="w-4 h-4 mr-2" />
           Email
         </Button>
