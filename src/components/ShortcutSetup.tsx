@@ -13,15 +13,32 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
   const { toast } = useToast();
 
   const handleInstallShortcut = () => {
-    // Create the shortcut URL with pre-configured actions
-    const shortcutUrl = "shortcuts://import-shortcut?url=https://www.icloud.com/shortcuts/chaos-captain-save";
+    // Generate a shortcut that can be imported
+    // Using a data URL approach for a basic shortcut
+    const shortcutData = {
+      name: "Save to Notes from Chaos Captain",
+      actions: [
+        {
+          type: "receiveText",
+          parameters: { "WFTextActionText": "Shortcut Input" }
+        },
+        {
+          type: "note",
+          parameters: { "WFNote": "Shortcut Input" }
+        }
+      ]
+    };
     
-    // Try to open Shortcuts app
+    // For iOS, we'll open shortcuts app with instructions
+    // Since we can't programmatically create shortcuts from web,
+    // we provide the URL scheme to open the gallery or app
+    const shortcutUrl = "shortcuts://";
+    
     window.location.href = shortcutUrl;
     
     toast({
-      title: "Opening Shortcuts",
-      description: "Install the shortcut to enable Notes integration",
+      title: "Opening Shortcuts App",
+      description: "Follow the steps to create your shortcut",
     });
     
     setStep(2);
@@ -60,9 +77,9 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
                   1
                 </div>
                 <div className="text-white">
-                  <p className="font-medium">Install the Shortcut</p>
+                  <p className="font-medium">Open Shortcuts App</p>
                   <p className="text-sm text-ocean-light mt-1">
-                    Tap the button below to open the Shortcuts app and install the "Save to Notes" shortcut
+                    Tap below to open Shortcuts app, then follow the simple setup steps
                   </p>
                 </div>
               </div>
@@ -72,9 +89,9 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
                   2
                 </div>
                 <div className="text-white">
-                  <p className="font-medium">Allow Access</p>
+                  <p className="font-medium">Create the Shortcut</p>
                   <p className="text-sm text-ocean-light mt-1">
-                    Grant permission for the shortcut to access Notes and receive data from Chaos Captain
+                    Follow the step-by-step instructions to create your "Save to Notes" shortcut
                   </p>
                 </div>
               </div>
@@ -100,7 +117,7 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
                 className="w-full"
               >
                 <Book className="w-5 h-5 mr-2" />
-                Install Shortcut
+                Open Shortcuts App
               </Button>
               
               <button
@@ -123,23 +140,31 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
               </div>
               
               <div className="text-white">
-                <p className="font-medium text-lg">Shortcut Installation</p>
+                <p className="font-medium text-lg">Create Your Shortcut</p>
                 <p className="text-sm text-ocean-light mt-2">
-                  Did you successfully install the shortcut in the Shortcuts app?
+                  Follow these steps in the Shortcuts app to enable Notes integration
                 </p>
               </div>
 
-              <div className="bg-white/5 rounded-lg p-4 text-left space-y-2">
-                <p className="text-sm font-medium text-white">Manual Setup (if needed):</p>
+              <div className="bg-white/5 rounded-lg p-4 text-left space-y-3">
+                <p className="text-sm font-medium text-white">Quick Setup Steps:</p>
                 <ol className="text-xs text-ocean-light space-y-2 list-decimal list-inside">
-                  <li>Open the Shortcuts app</li>
-                  <li>Tap "+" to create a new shortcut</li>
-                  <li>Add "Receive [Text] input from"</li>
-                  <li>Add "Create Note" action</li>
-                  <li>Set note content to "Shortcut Input"</li>
-                  <li>Name it "Save to Notes"</li>
-                  <li>Enable "Show in Share Sheet"</li>
+                  <li>In Shortcuts app, tap "+" to create new shortcut</li>
+                  <li>Search and add "Receive" action, set to receive "Text"</li>
+                  <li>Search and add "Create Note" action</li>
+                  <li>In Create Note, tap the note field and select "Shortcut Input"</li>
+                  <li>Tap the shortcut name at top, rename to "Save to Notes"</li>
+                  <li>Tap the info icon (i), enable "Show in Share Sheet"</li>
+                  <li>Under Share Sheet Types, enable "Text"</li>
+                  <li>Done! Return to Chaos Captain</li>
                 </ol>
+                
+                <div className="mt-3 p-3 bg-accent/10 rounded border border-accent/20">
+                  <p className="text-xs text-accent font-medium mb-1">⚡ Pro Tip:</p>
+                  <p className="text-xs text-ocean-light">
+                    This shortcut will appear in the Share menu when you tap "Apple Notes" button in Chaos Captain. It only takes 2 minutes to set up once!
+                  </p>
+                </div>
               </div>
             </div>
 
