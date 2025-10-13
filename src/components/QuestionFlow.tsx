@@ -61,13 +61,21 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
     }
   };
 
+  const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value && !value.startsWith("#")) {
+      setTagInput("#" + value);
+    } else {
+      setTagInput(value);
+    }
+  };
+
   const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
       const trimmedTag = tagInput.trim();
-      const tagWithHash = trimmedTag.startsWith("#") ? trimmedTag : `#${trimmedTag}`;
-      if (!tags.includes(tagWithHash)) {
-        setTags([...tags, tagWithHash]);
+      if (trimmedTag.length > 1 && !tags.includes(trimmedTag)) {
+        setTags([...tags, trimmedTag]);
       }
       setTagInput("");
     }
@@ -105,7 +113,7 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
           <div className="space-y-4">
             <Input
               value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
+              onChange={handleTagInputChange}
               onKeyDown={handleTagAdd}
               placeholder={question.placeholder}
               className="bg-white/10 border-white/20 text-white placeholder:text-ocean-light"
