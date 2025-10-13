@@ -64,8 +64,10 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
   const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
-      if (!tags.includes(tagInput.trim())) {
-        setTags([...tags, tagInput.trim()]);
+      const trimmedTag = tagInput.trim();
+      const tagWithHash = trimmedTag.startsWith("#") ? trimmedTag : `#${trimmedTag}`;
+      if (!tags.includes(tagWithHash)) {
+        setTags([...tags, tagWithHash]);
       }
       setTagInput("");
     }
