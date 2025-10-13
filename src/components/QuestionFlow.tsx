@@ -62,20 +62,20 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
   };
 
   const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value && !value.startsWith("#")) {
-      setTagInput("#" + value);
-    } else {
-      setTagInput(value);
-    }
+    setTagInput(e.target.value);
   };
 
   const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
-      const trimmedTag = tagInput.trim();
-      if (trimmedTag.length > 1 && !tags.includes(trimmedTag)) {
-        setTags([...tags, trimmedTag]);
+      const words = tagInput.trim().split(/\s+/);
+      const newTags = words.map(word => {
+        const cleanWord = word.replace(/^#+/, '');
+        return cleanWord ? `#${cleanWord}` : '';
+      }).filter(tag => tag && !tags.includes(tag));
+      
+      if (newTags.length > 0) {
+        setTags([...tags, ...newTags]);
       }
       setTagInput("");
     }
