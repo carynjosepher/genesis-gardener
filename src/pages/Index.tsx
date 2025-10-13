@@ -3,10 +3,12 @@ import { VoiceCapture } from "@/components/VoiceCapture";
 import { QuestionFlow } from "@/components/QuestionFlow";
 import { MarkdownOutput } from "@/components/MarkdownOutput";
 import { Celebration } from "@/components/Celebration";
-import { Anchor } from "lucide-react";
+import { Anchor, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { CaptureData } from "@/types/capture";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [step, setStep] = useState<"capture" | "flow" | "output" | "celebrate">("capture");
   const [transcript, setTranscript] = useState("");
   const [captureData, setCaptureData] = useState<CaptureData>({
@@ -45,14 +47,23 @@ const Index = () => {
             <Anchor className="w-6 h-6 text-accent" />
             <h1 className="text-xl font-bold text-white">Chaos Captain</h1>
           </div>
-          {step !== "capture" && (
+          <div className="flex items-center gap-4">
+            {step !== "capture" && (
+              <button
+                onClick={handleReset}
+                className="text-sm text-accent hover:text-accent/80 transition-colors"
+              >
+                New Capture
+              </button>
+            )}
             <button
-              onClick={handleReset}
-              className="text-sm text-accent hover:text-accent/80 transition-colors"
+              onClick={() => navigate("/settings")}
+              className="text-accent hover:text-accent/80 transition-colors"
+              aria-label="Settings"
             >
-              New Capture
+              <Settings className="w-5 h-5" />
             </button>
-          )}
+          </div>
         </div>
       </header>
 

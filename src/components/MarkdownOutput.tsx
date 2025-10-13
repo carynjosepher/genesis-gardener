@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Mail, Copy, Check } from "lucide-react";
+import { Download, Mail, Copy, Check, Book, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import type { CaptureData } from "@/types/capture";
 interface MarkdownOutputProps {
   captureData: CaptureData;
@@ -13,12 +14,19 @@ export const MarkdownOutput = ({
 }: MarkdownOutputProps) => {
   const [markdown, setMarkdown] = useState("");
   const [copied, setCopied] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const [isNotionConnected, setIsNotionConnected] = useState(false);
+  const [isSendingToNotion, setIsSendingToNotion] = useState(false);
+  const { toast } = useToast();
   useEffect(() => {
     generateMarkdown();
+    checkNotionConnection();
   }, [captureData]);
+
+  const checkNotionConnection = () => {
+    const apiKey = localStorage.getItem("notion_api_key");
+    const databaseId = localStorage.getItem("notion_database_id");
+    setIsNotionConnected(!!apiKey && !!databaseId);
+  };
   const generateMarkdown = () => {
     const now = new Date();
     const timestamp = now.toISOString();
@@ -81,6 +89,54 @@ export const MarkdownOutput = ({
     const body = encodeURIComponent(markdown);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
+
+  const handleSendToNotion = async () => {
+    setIsSendingToNotion(true);
+    try {
+      const apiKey = localStorage.getItem("notion_api_key");
+      const databaseId = localStorage.getItem("notion_database_id");
+
+      const { error } = await supabase.functions.invoke("send-to-notion", {
+        body: {
+          apiKey,
+          databaseId,
+          title: captureData.what.split("\n")[0] || "Note",
+          content: markdown,
+          tags: captureData.tags,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sent to Notion!",
+        description: "Your note has been added to your Notion database",
+      });
+    } catch (error) {
+      console.error("Notion error:", error);
+      toast({
+        title: "Failed to send",
+        description: "Could not send note to Notion. Check your settings.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingToNotion(false);
+    }
+  };
+
+  const handleSendToAppleNotes = () => {
+    // iOS Shortcuts URL scheme
+    const title = encodeURIComponent(captureData.what.split("\n")[0] || "Note");
+    const body = encodeURIComponent(markdown);
+    
+    // Try to open Shortcuts app with the note data
+    window.location.href = `shortcuts://run-shortcut?name=Create%20Note&input=text&text=${body}`;
+    
+    toast({
+      title: "Opening Shortcuts",
+      description: "Create a shortcut to save to Apple Notes",
+    });
+  };
   return <div className="space-y-6 animate-fade-in">
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-white">Note Complete!</h2>
@@ -115,6 +171,25 @@ export const MarkdownOutput = ({
           <Mail className="w-4 h-4 mr-2" />
           Email
         </Button>
+        <Button 
+          onClick={handleSendToAppleNotes} 
+          variant="outline" 
+          className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+        >
+          <Book className="w-4 h-4 mr-2" />
+          Apple Notes
+        </Button>
+        {isNotionConnected && (
+          <Button 
+            onClick={handleSendToNotion}
+            disabled={isSendingToNotion}
+            variant="outline" 
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <Share2 className="w-4 h-4 mr-2" />
+            {isSendingToNotion ? "Sending..." : "Send to Notion"}
+          </Button>
+        )}
       </div>
 
       <div className="text-center pt-4">
