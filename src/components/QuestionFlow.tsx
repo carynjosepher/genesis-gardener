@@ -13,11 +13,6 @@ interface QuestionFlowProps {
 
 const questions = [
   {
-    id: "what",
-    title: "Tell The Captain",
-    placeholder: "Describe what you want to remember...",
-  },
-  {
     id: "why",
     title: "Why Log This?",
     placeholder: "Why is this important or interesting?",
