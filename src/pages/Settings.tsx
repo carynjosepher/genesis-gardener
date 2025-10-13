@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Anchor, Save, ExternalLink } from "lucide-react";
+import { Anchor, Save, ExternalLink, Book } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -55,6 +55,14 @@ const Settings = () => {
     toast({
       title: "Disconnected",
       description: "Notion integration has been removed",
+    });
+  };
+
+  const handleResetShortcutSetup = () => {
+    localStorage.removeItem("shortcut_setup_complete");
+    toast({
+      title: "Setup Reset",
+      description: "You'll see the shortcut setup screen next time you open the app",
     });
   };
 
@@ -161,9 +169,35 @@ const Settings = () => {
             </div>
           </Card>
 
+          {/* Apple Notes Shortcut */}
+          <Card className="bg-white/10 backdrop-blur-md border-white/20 p-6 space-y-4">
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                Apple Notes Shortcut
+              </h3>
+              <p className="text-sm text-ocean-light">
+                Manage your iOS Shortcuts integration
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={handleResetShortcutSetup}
+                variant="outline"
+                className="w-full border-white/20 bg-white/10 text-white hover:bg-white/20"
+              >
+                <Book className="w-4 h-4 mr-2" />
+                Re-run Shortcut Setup
+              </Button>
+              <p className="text-xs text-ocean-light">
+                This will show the shortcut setup screen again when you return to the app
+              </p>
+            </div>
+          </Card>
+
           {/* Instructions */}
           <Card className="bg-white/10 backdrop-blur-md border-white/20 p-6 space-y-4">
-            <h4 className="font-semibold text-white">Setup Instructions</h4>
+            <h4 className="font-semibold text-white">Notion Setup Instructions</h4>
             <ol className="text-sm text-ocean-light space-y-2 list-decimal list-inside">
               <li>Create a Notion integration at notion.so/my-integrations</li>
               <li>Copy the "Internal Integration Token"</li>

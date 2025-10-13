@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VoiceCapture } from "@/components/VoiceCapture";
 import { QuestionFlow } from "@/components/QuestionFlow";
 import { MarkdownOutput } from "@/components/MarkdownOutput";
 import { Celebration } from "@/components/Celebration";
+import { ShortcutSetup } from "@/components/ShortcutSetup";
 import { Anchor, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { CaptureData } from "@/types/capture";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [showShortcutSetup, setShowShortcutSetup] = useState(false);
   const [step, setStep] = useState<"capture" | "flow" | "output" | "celebrate">("capture");
   const [transcript, setTranscript] = useState("");
   const [captureData, setCaptureData] = useState<CaptureData>({
@@ -17,6 +19,14 @@ const Index = () => {
     when: "",
     tags: [],
   });
+
+  useEffect(() => {
+    // Check if shortcut setup has been completed
+    const setupComplete = localStorage.getItem("shortcut_setup_complete");
+    if (!setupComplete) {
+      setShowShortcutSetup(true);
+    }
+  }, []);
 
   const handleVoiceCapture = (text: string) => {
     setTranscript(text);
@@ -36,6 +46,10 @@ const Index = () => {
     setTranscript("");
     setCaptureData({ what: "", why: "", when: "", tags: [] });
     setStep("capture");
+  };
+
+  const handleShortcutSetupComplete = () => {
+    setShowShortcutSetup(false);
   };
 
   return (
@@ -70,20 +84,26 @@ const Index = () => {
       {/* Main Content */}
       <div className="pt-20 pb-8 px-4">
         <div className="container mx-auto max-w-2xl">
-          {step === "capture" && <VoiceCapture onTranscript={handleVoiceCapture} />}
-          {step === "flow" && (
-            <QuestionFlow
-              initialTranscript={transcript}
-              onComplete={handleFlowComplete}
-            />
+          {showShortcutSetup ? (
+            <ShortcutSetup onComplete={handleShortcutSetupComplete} />
+          ) : (
+            <>
+              {step === "capture" && <VoiceCapture onTranscript={handleVoiceCapture} />}
+              {step === "flow" && (
+                <QuestionFlow
+                  initialTranscript={transcript}
+                  onComplete={handleFlowComplete}
+                />
+              )}
+              {step === "output" && (
+                <MarkdownOutput
+                  captureData={captureData}
+                  onComplete={handleOutputComplete}
+                />
+              )}
+              {step === "celebrate" && <Celebration onReset={handleReset} />}
+            </>
           )}
-          {step === "output" && (
-            <MarkdownOutput
-              captureData={captureData}
-              onComplete={handleOutputComplete}
-            />
-          )}
-          {step === "celebrate" && <Celebration onReset={handleReset} />}
         </div>
       </div>
     </div>
