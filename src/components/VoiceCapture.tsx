@@ -4,39 +4,41 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mic, Square, Keyboard, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
 interface VoiceCaptureProps {
   onTranscript: (text: string) => void;
 }
-
-export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
+export const VoiceCapture = ({
+  onTranscript
+}: VoiceCaptureProps) => {
   const [mode, setMode] = useState<"choice" | "voice" | "text">("choice");
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [textInput, setTextInput] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
+      mediaRecorder.ondataavailable = e => {
         if (e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
       };
-
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+        const audioBlob = new Blob(chunksRef.current, {
+          type: "audio/webm"
+        });
         await processAudio(audioBlob);
-        stream.getTracks().forEach((track) => track.stop());
+        stream.getTracks().forEach(track => track.stop());
       };
-
       mediaRecorder.start();
       setIsRecording(true);
     } catch (error) {
@@ -44,11 +46,10 @@ export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
       toast({
         title: "Microphone Error",
         description: "Could not access microphone. Please check permissions.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
@@ -56,7 +57,6 @@ export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
       setIsProcessing(true);
     }
   };
-
   const processAudio = async (audioBlob: Blob) => {
     try {
       // Convert blob to base64
@@ -64,18 +64,20 @@ export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
       reader.readAsDataURL(audioBlob);
       reader.onloadend = async () => {
         const base64Audio = reader.result?.toString().split(",")[1];
-
         if (!base64Audio) {
           throw new Error("Failed to convert audio");
         }
 
         // Call edge function to transcribe
-        const { data, error } = await supabase.functions.invoke("transcribe-audio", {
-          body: { audio: base64Audio },
+        const {
+          data,
+          error
+        } = await supabase.functions.invoke("transcribe-audio", {
+          body: {
+            audio: base64Audio
+          }
         });
-
         if (error) throw error;
-
         if (data?.text) {
           onTranscript(data.text);
         } else {
@@ -87,21 +89,18 @@ export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
       toast({
         title: "Processing Error",
         description: "Failed to transcribe audio. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
       setIsProcessing(false);
     }
   };
-
   const handleTextSubmit = () => {
     if (textInput.trim()) {
       onTranscript(textInput);
     }
   };
-
   if (mode === "choice") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+    return <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
         <div className="text-center space-y-4">
           <h2 className="text-4xl font-bold text-white">Ready to Capture</h2>
           <p className="text-xl text-ocean-light max-w-md mx-auto">
@@ -110,70 +109,40 @@ export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
         </div>
 
         <div className="flex gap-6">
-          <Button
-            onClick={() => setMode("voice")}
-            variant="hero"
-            className="w-40 h-40 rounded-2xl flex-col gap-4 text-white shadow-[var(--shadow-ocean)] hover:scale-105 transition-all duration-300"
-          >
+          <Button onClick={() => setMode("voice")} variant="hero" className="w-40 h-40 rounded-2xl flex-col gap-4 text-white shadow-[var(--shadow-ocean)] hover:scale-105 transition-all duration-300">
             <Mic className="w-12 h-12" />
             <span className="text-lg font-semibold">Voice</span>
           </Button>
 
-          <Button
-            onClick={() => setMode("text")}
-            variant="hero"
-            className="w-40 h-40 rounded-2xl flex-col gap-4 text-white shadow-[var(--shadow-ocean)] hover:scale-105 transition-all duration-300"
-          >
+          <Button onClick={() => setMode("text")} variant="hero" className="w-40 h-40 rounded-2xl flex-col gap-4 text-white shadow-[var(--shadow-ocean)] hover:scale-105 transition-all duration-300">
             <Keyboard className="w-12 h-12" />
             <span className="text-lg font-semibold">Text</span>
           </Button>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (mode === "text") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-fade-in">
+    return <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-fade-in">
         <div className="text-center space-y-4">
-          <h2 className="text-4xl font-bold text-white">Type Your Note</h2>
-          <p className="text-xl text-ocean-light max-w-md mx-auto">
-            Write down what you want to remember
-          </p>
+          <h2 className="text-4xl font-bold text-white">Tell The Captain</h2>
+          <p className="text-xl text-ocean-light max-w-md mx-auto">Leave a note for your Future Self</p>
         </div>
 
         <div className="w-full max-w-2xl space-y-4">
-          <Textarea
-            value={textInput}
-            onChange={(e) => setTextInput(e.target.value)}
-            placeholder="Type your note here..."
-            className="min-h-[200px] bg-white/10 border-white/20 text-white placeholder:text-ocean-light text-lg resize-none"
-          />
+          <Textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="Type your note here..." className="min-h-[200px] bg-white/10 border-white/20 text-white placeholder:text-ocean-light text-lg resize-none" />
           <div className="flex justify-between gap-4">
-            <Button
-              onClick={() => setMode("choice")}
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
-            >
+            <Button onClick={() => setMode("choice")} variant="outline" className="border-white/20 text-white hover:bg-white/10">
               Back
             </Button>
-            <Button
-              onClick={handleTextSubmit}
-              disabled={!textInput.trim()}
-              variant="hero"
-              className="flex items-center gap-2"
-            >
+            <Button onClick={handleTextSubmit} disabled={!textInput.trim()} variant="hero" className="flex items-center gap-2">
               Continue
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-fade-in">
+  return <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-fade-in">
       <div className="text-center space-y-4">
         <h2 className="text-4xl font-bold text-white">Voice Capture</h2>
         <p className="text-xl text-ocean-light max-w-md mx-auto">
@@ -182,54 +151,28 @@ export const VoiceCapture = ({ onTranscript }: VoiceCaptureProps) => {
       </div>
 
       <div className="relative">
-        {!isRecording && !isProcessing && (
-          <Button
-            onClick={startRecording}
-            size="xl"
-            variant="hero"
-            className="w-32 h-32 rounded-full text-white shadow-[var(--shadow-ocean)] hover:scale-110 transition-all duration-300"
-          >
+        {!isRecording && !isProcessing && <Button onClick={startRecording} size="xl" variant="hero" className="w-32 h-32 rounded-full text-white shadow-[var(--shadow-ocean)] hover:scale-110 transition-all duration-300">
             <Mic className="w-16 h-16" />
-          </Button>
-        )}
+          </Button>}
 
-        {isRecording && (
-          <Button
-            onClick={stopRecording}
-            size="xl"
-            className="w-32 h-32 rounded-full bg-destructive hover:bg-destructive/90 text-white animate-pulse"
-          >
+        {isRecording && <Button onClick={stopRecording} size="xl" className="w-32 h-32 rounded-full bg-destructive hover:bg-destructive/90 text-white animate-pulse">
             <Square className="w-16 h-16" />
-          </Button>
-        )}
+          </Button>}
 
-        {isProcessing && (
-          <div className="w-32 h-32 rounded-full bg-accent/20 flex items-center justify-center">
+        {isProcessing && <div className="w-32 h-32 rounded-full bg-accent/20 flex items-center justify-center">
             <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
+          </div>}
       </div>
 
-      {!isRecording && !isProcessing && (
-        <Button
-          onClick={() => setMode("choice")}
-          variant="outline"
-          className="border-white/20 text-white hover:bg-white/10"
-        >
+      {!isRecording && !isProcessing && <Button onClick={() => setMode("choice")} variant="outline" className="border-white/20 text-white hover:bg-white/10">
           Back
-        </Button>
-      )}
+        </Button>}
 
-      {isRecording && (
-        <p className="text-accent text-lg font-medium animate-pulse">
+      {isRecording && <p className="text-accent text-lg font-medium animate-pulse">
           Recording... Tap to stop
-        </p>
-      )}
-      {isProcessing && (
-        <p className="text-accent text-lg font-medium">
+        </p>}
+      {isProcessing && <p className="text-accent text-lg font-medium">
           Processing your audio...
-        </p>
-      )}
-    </div>
-  );
+        </p>}
+    </div>;
 };
