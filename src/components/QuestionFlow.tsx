@@ -15,17 +15,17 @@ const questions = [
   {
     id: "why",
     title: "Note Title",
-    placeholder: "How do you want to remember this?",
-  },
-  {
-    id: "when",
-    title: "When Should Be Reminded?",
-    placeholder: "e.g., Next week, In 3 months, Never",
+    placeholder: "Enter a title for your note",
   },
   {
     id: "tags",
-    title: "Add Tags (optional)",
-    placeholder: "Press Enter to add tags",
+    title: "Add Tags",
+    placeholder: "Type tags separated by spaces and press Enter",
+  },
+  {
+    id: "when",
+    title: "Set Reminder",
+    placeholder: "e.g., Tomorrow, Next week, In 3 months, or leave empty for no reminder",
   },
 ];
 
@@ -87,7 +87,8 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
 
   const canProceed =
     question.id === "tags" ||
-    (question.id !== "tags" && answers[question.id]?.trim().length > 0);
+    question.id === "when" ||
+    (question.id !== "tags" && question.id !== "when" && answers[question.id]?.trim().length > 0);
 
   return (
     <div className="space-y-8 animate-fade-in">
