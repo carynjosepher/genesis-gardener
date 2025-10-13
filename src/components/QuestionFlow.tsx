@@ -62,7 +62,14 @@ export const QuestionFlow = ({ initialTranscript, onComplete }: QuestionFlowProp
   };
 
   const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTagInput(e.target.value);
+    const value = e.target.value;
+    const words = value.split(/\s+/);
+    const formattedWords = words.map(word => {
+      if (!word) return '';
+      const cleanWord = word.replace(/^#+/, '');
+      return cleanWord ? `#${cleanWord}` : '';
+    });
+    setTagInput(formattedWords.join(' '));
   };
 
   const handleTagAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
