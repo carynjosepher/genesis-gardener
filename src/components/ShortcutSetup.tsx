@@ -13,18 +13,19 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
   const { toast } = useToast();
 
   const handleConnectNotes = () => {
-    // Open iCloud link to install the shortcut in new tab
+    // Open iCloud link to install the shortcut
     const installUrl = "https://www.icloud.com/shortcuts/d5e655c0e0e345908656aa098a81a1e2";
-    window.open(installUrl, '_blank');
-    
-    toast({
-      title: "Opening Shortcut",
-      description: "Install the Chaos Captain to Notes shortcut in a new tab",
-    });
+    window.location.href = installUrl;
     
     // Mark as connected and store preference
     setConnectedService("notes");
     localStorage.setItem("connected_service", "notes");
+    
+    toast({
+      title: "Installing Shortcut",
+      description: "After installation, use the back button to return to Chaos Captain",
+      duration: 5000,
+    });
   };
 
   const handleConnectNotion = () => {
