@@ -134,11 +134,12 @@ export const MarkdownOutput = ({
 
   const handleSendToAppleNotes = async () => {
     try {
-      // Copy to clipboard first, then use clipboard as input
+      // Copy to clipboard first as backup
       await navigator.clipboard.writeText(markdown);
       
-      // Use clipboard as input source - more reliable from web
-      window.location.href = 'shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=clipboard';
+      // Pass text directly to the shortcut's receive block
+      const encodedText = encodeURIComponent(markdown);
+      window.location.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=text&text=${encodedText}`;
       
       toast({
         title: "Sent to Apple Notes!",
@@ -152,7 +153,7 @@ export const MarkdownOutput = ({
     } catch (error) {
       toast({
         title: "Error",
-        description: "Could not copy to clipboard",
+        description: "Could not process note",
         variant: "destructive",
       });
     }
