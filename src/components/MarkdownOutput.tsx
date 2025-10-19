@@ -115,6 +115,11 @@ export const MarkdownOutput = ({
         title: "Sent to Notion!",
         description: "Your note has been added to your Notion database",
       });
+      
+      // Complete the flow after successful send
+      setTimeout(() => {
+        onComplete();
+      }, 1500);
     } catch (error) {
       console.error("Notion error:", error);
       toast({
@@ -135,9 +140,14 @@ export const MarkdownOutput = ({
     window.location.href = `shortcuts://x-callback-url/run-shortcut?name=Chaos%20Captain%20to%20Notes&input=${encodedText}`;
     
     toast({
-      title: "Sending to Notes",
-      description: "Opening shortcut to save your note",
+      title: "Sent to Apple Notes!",
+      description: "Your note has been saved",
     });
+    
+    // Complete the flow after a brief delay
+    setTimeout(() => {
+      onComplete();
+    }, 1500);
   };
   return <div className="space-y-6 animate-fade-in">
       <div className="text-center space-y-2">
@@ -230,12 +240,6 @@ export const MarkdownOutput = ({
             {isSendingToNotion ? "Sending..." : "Send to Notion"}
           </Button>
         )}
-      </div>
-
-      <div className="text-center pt-4">
-        <Button onClick={onComplete} variant="hero" size="lg">
-          Complete 🎉
-        </Button>
       </div>
     </div>;
 };
