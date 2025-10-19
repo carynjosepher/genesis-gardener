@@ -13,8 +13,9 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
   const { toast } = useToast();
 
   const handleConnectNotes = () => {
-    const shortcutUrl = "shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=This%20is%20a%20test";
-    window.location.href = shortcutUrl;
+    // Open iCloud link to install the shortcut
+    const installUrl = "https://www.icloud.com/shortcuts/d5e655c0e0e345908656aa098a81a1e2";
+    window.location.href = installUrl;
     
     toast({
       title: "Opening Shortcut",
