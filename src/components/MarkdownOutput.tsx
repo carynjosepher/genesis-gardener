@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Mail, Copy, Check, Book, Share2 } from "lucide-react";
+import { Download, Mail, Copy, Check, Book, Share2, Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { CaptureData } from "@/types/capture";
@@ -158,6 +158,40 @@ export const MarkdownOutput = ({
       });
     }
   };
+
+  const handleAddToCalendar = async () => {
+    try {
+      const title = captureData.what.split("\n")[0] || "Chaos Captain Event";
+      const notes = `${captureData.what}\n\n${captureData.why}`;
+      
+      // Create event data
+      const eventData = JSON.stringify({
+        title: title,
+        date: captureData.when,
+        notes: notes,
+        tags: captureData.tags.join(", ")
+      });
+      
+      // Copy to clipboard and trigger shortcut
+      await navigator.clipboard.writeText(eventData);
+      window.location.href = 'shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Calendar&input=clipboard';
+      
+      toast({
+        title: "Adding to Calendar!",
+        description: "Creating your calendar event",
+      });
+      
+      setTimeout(() => {
+        onComplete();
+      }, 1500);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not create calendar event",
+        variant: "destructive",
+      });
+    }
+  };
   return <div className="space-y-6 animate-fade-in">
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-white">Note Complete!</h2>
@@ -238,6 +272,16 @@ export const MarkdownOutput = ({
           <Book className="w-4 h-4 mr-2" />
           Apple Notes
         </Button>
+        {captureData.when && captureData.when !== "I'll find it when I need it" && (
+          <Button 
+            onClick={handleAddToCalendar} 
+            variant="outline" 
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <CalendarIcon className="w-4 h-4 mr-2" />
+            Add to Calendar
+          </Button>
+        )}
         {isNotionConnected && (
           <Button 
             onClick={handleSendToNotion}
