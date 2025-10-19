@@ -132,22 +132,30 @@ export const MarkdownOutput = ({
     }
   };
 
-  const handleSendToAppleNotes = () => {
-    // iOS Shortcuts URL scheme - official Apple format
-    const encodedText = encodeURIComponent(markdown);
-    
-    // Use the correct format: input=text tells it to use text input, text= contains the actual content
-    window.location.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=text&text=${encodedText}`;
-    
-    toast({
-      title: "Sent to Apple Notes!",
-      description: "Your note has been saved",
-    });
-    
-    // Complete the flow after a brief delay
-    setTimeout(() => {
-      onComplete();
-    }, 1500);
+  const handleSendToAppleNotes = async () => {
+    try {
+      // Copy to clipboard first, then use clipboard as input
+      await navigator.clipboard.writeText(markdown);
+      
+      // Use clipboard as input source - more reliable from web
+      window.location.href = 'shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=clipboard';
+      
+      toast({
+        title: "Sent to Apple Notes!",
+        description: "Your note has been saved",
+      });
+      
+      // Complete the flow after a brief delay
+      setTimeout(() => {
+        onComplete();
+      }, 1500);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not copy to clipboard",
+        variant: "destructive",
+      });
+    }
   };
   return <div className="space-y-6 animate-fade-in">
       <div className="text-center space-y-2">
