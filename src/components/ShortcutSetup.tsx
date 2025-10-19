@@ -13,13 +13,13 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
   const { toast } = useToast();
 
   const handleConnectNotes = () => {
-    // Open iCloud link to install the shortcut
+    // Open iCloud link to install the shortcut in new tab
     const installUrl = "https://www.icloud.com/shortcuts/d5e655c0e0e345908656aa098a81a1e2";
-    window.location.href = installUrl;
+    window.open(installUrl, '_blank');
     
     toast({
       title: "Opening Shortcut",
-      description: "Install the Chaos Captain to Notes shortcut",
+      description: "Install the Chaos Captain to Notes shortcut in a new tab",
     });
     
     // Mark as connected and store preference
@@ -30,11 +30,11 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
   const handleConnectNotion = () => {
     // Placeholder URL - will be updated when Notion shortcut is ready
     const shortcutUrl = "https://www.icloud.com/shortcuts/notion-placeholder";
-    window.location.href = shortcutUrl;
+    window.open(shortcutUrl, '_blank');
     
     toast({
       title: "Opening Shortcut",
-      description: "Install the Chaos Captain to Notion shortcut",
+      description: "Install the Chaos Captain to Notion shortcut in a new tab",
     });
     
     // Mark as connected and store preference
