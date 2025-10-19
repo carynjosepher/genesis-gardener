@@ -133,11 +133,11 @@ export const MarkdownOutput = ({
   };
 
   const handleSendToAppleNotes = () => {
-    // iOS Shortcuts URL scheme with x-callback-url
+    // iOS Shortcuts URL scheme - official Apple format
     const encodedText = encodeURIComponent(markdown);
     
-    // Use the Chaos Captain to Notes shortcut with URL-encoded text
-    window.location.href = `shortcuts://x-callback-url/run-shortcut?name=Chaos%20Captain%20to%20Notes&input=${encodedText}`;
+    // Use the correct format: input=text tells it to use text input, text= contains the actual content
+    window.location.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=text&text=${encodedText}`;
     
     toast({
       title: "Sent to Apple Notes!",
