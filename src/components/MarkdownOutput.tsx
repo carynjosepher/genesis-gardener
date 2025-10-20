@@ -200,51 +200,36 @@ export const MarkdownOutput = ({
     }
   };
 
-  const handleAddToCalendar = async () => {
+  const handleAddToCalendar = () => {
     try {
-      const title = captureData.what.split("\n")[0] || "Chaos Captain Event";
-      const notes = `${captureData.what}\n\n${captureData.why}`;
+      const title = encodeURIComponent(captureData.what.split("\n")[0] || "Chaos Captain Event");
+      const notesText = encodeURIComponent(`${captureData.what}\n\n${captureData.why}\n\nTags: ${captureData.tags.join(", ")}`);
       
       // Convert the when string to an actual date
       const eventDate = convertToDate(captureData.when);
       
-      // Create event data with ISO date for easy parsing
-      const eventData = JSON.stringify({
-        title: title,
-        startDate: eventDate.toISOString(),
-        notes: notes,
-        tags: captureData.tags.join(", ")
-      });
+      // Format date for calendar URL (yyyyMMddTHHmmss)
+      const year = eventDate.getFullYear();
+      const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+      const day = String(eventDate.getDate()).padStart(2, '0');
+      const hours = String(eventDate.getHours()).padStart(2, '0');
+      const minutes = String(eventDate.getMinutes()).padStart(2, '0');
+      const startDate = `${year}${month}${day}T${hours}${minutes}00`;
       
-      console.log("Calendar JSON:", eventData);
+      // Use iOS Calendar URL scheme - opens calendar directly
+      const calendarUrl = `calshow:?start_date=${startDate}&title=${title}&notes=${notesText}`;
       
-      // Copy to clipboard with confirmation
-      await navigator.clipboard.writeText(eventData);
-      
-      // Wait a moment to ensure clipboard write completes
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      // Verify clipboard contents
-      const clipboardCheck = await navigator.clipboard.readText();
-      console.log("Clipboard contents:", clipboardCheck);
-      
-      if (clipboardCheck !== eventData) {
-        throw new Error("Clipboard verification failed");
-      }
-      
-      // Now trigger the shortcut
-      window.location.href = 'shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Calendar&input=clipboard';
+      window.location.href = calendarUrl;
       
       toast({
-        title: "Adding to Calendar!",
-        description: "Creating event for " + eventDate.toLocaleDateString(),
+        title: "Opening Calendar...",
+        description: "Event: " + eventDate.toLocaleDateString(),
       });
-      
     } catch (error) {
       console.error("Calendar error:", error);
       toast({
         title: "Error",
-        description: "Could not prepare calendar event",
+        description: "Could not open calendar",
         variant: "destructive",
       });
     }
