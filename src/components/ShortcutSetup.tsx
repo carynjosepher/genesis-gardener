@@ -3,23 +3,31 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Book, FileText, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ShortcutSetupProps {
   onComplete: () => void;
+  userId?: string;
 }
 
-export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
+export const ShortcutSetup = ({ onComplete, userId }: ShortcutSetupProps) => {
   const [connectedService, setConnectedService] = useState<"notes" | "notion" | null>(null);
   const { toast } = useToast();
 
-  const handleConnectNotes = () => {
+  const handleConnectNotes = async () => {
     // Open iCloud link to install the shortcut
     const installUrl = "https://www.icloud.com/shortcuts/d5e655c0e0e345908656aa098a81a1e2";
     window.location.href = installUrl;
     
-    // Mark as connected and store preference
+    // Mark as connected and save to database
     setConnectedService("notes");
-    localStorage.setItem("connected_service", "notes");
+    
+    if (userId) {
+      await supabase.from("user_preferences").upsert({
+        user_id: userId,
+        storage_service: "apple_notes",
+      });
+    }
     
     toast({
       title: "Installing Shortcut",
@@ -28,28 +36,32 @@ export const ShortcutSetup = ({ onComplete }: ShortcutSetupProps) => {
     });
   };
 
-  const handleConnectNotion = () => {
+  const handleConnectNotion = async () => {
     // Placeholder URL - will be updated when Notion shortcut is ready
     const shortcutUrl = "https://www.icloud.com/shortcuts/notion-placeholder";
     window.open(shortcutUrl, '_blank');
+    
+    // Mark as connected and save to database
+    setConnectedService("notion");
+    
+    if (userId) {
+      await supabase.from("user_preferences").upsert({
+        user_id: userId,
+        storage_service: "notion",
+      });
+    }
     
     toast({
       title: "Opening Shortcut",
       description: "Install the Chaos Captain to Notion shortcut in a new tab",
     });
-    
-    // Mark as connected and store preference
-    setConnectedService("notion");
-    localStorage.setItem("connected_service", "notion");
   };
 
   const handleComplete = () => {
-    localStorage.setItem("shortcut_setup_complete", "true");
     onComplete();
   };
 
   const handleSkip = () => {
-    localStorage.setItem("shortcut_setup_complete", "skipped");
     onComplete();
   };
 

@@ -7,42 +7,62 @@ import type { CaptureData } from "@/types/capture";
 interface MarkdownOutputProps {
   captureData: CaptureData;
   onComplete: () => void;
+  userId?: string;
 }
 export const MarkdownOutput = ({
   captureData,
-  onComplete
+  onComplete,
+  userId
 }: MarkdownOutputProps) => {
   const [markdown, setMarkdown] = useState("");
   const [copied, setCopied] = useState(false);
   const [isNotionConnected, setIsNotionConnected] = useState(false);
   const [isSendingToNotion, setIsSendingToNotion] = useState(false);
+  const [userPreference, setUserPreference] = useState<string | null>(null);
   const { toast } = useToast();
   useEffect(() => {
     generateMarkdown();
     checkNotionConnection();
     
-    // Auto-save flow
+    // Load user preference and auto-save
     const autoSave = async () => {
-      // Wait a moment for markdown to generate
+      if (!userId) return;
+      
+      // Wait for markdown to generate
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Auto-create calendar event if date is set
-      if (captureData.when && captureData.when !== "I'll find it when I need it") {
-        handleAddToCalendar();
-        await new Promise(resolve => setTimeout(resolve, 800));
+      // Get user's storage preference
+      const { data } = await supabase
+        .from("user_preferences")
+        .select("storage_service")
+        .eq("user_id", userId)
+        .maybeSingle();
+      
+      if (data?.storage_service) {
+        setUserPreference(data.storage_service);
+        
+        // Auto-create calendar event if date is set
+        if (captureData.when && captureData.when !== "I'll find it when I need it") {
+          handleAddToCalendar();
+          await new Promise(resolve => setTimeout(resolve, 800));
+        }
+        
+        // Auto-save based on preference
+        if (data.storage_service === "apple_notes") {
+          handleSendToAppleNotes();
+        } else if (data.storage_service === "notion") {
+          await handleSendToNotion();
+        }
+        
+        // Auto-complete after a delay
+        setTimeout(() => {
+          onComplete();
+        }, 2000);
       }
-      
-      // Auto-send to Apple Notes
-      handleSendToAppleNotes();
-      
-      // Auto-complete after a delay
-      setTimeout(() => {
-        onComplete();
-      }, 2000);
     };
     
     autoSave();
-  }, [captureData]);
+  }, [captureData, userId]);
 
   const checkNotionConnection = () => {
     const apiKey = localStorage.getItem("notion_api_key");

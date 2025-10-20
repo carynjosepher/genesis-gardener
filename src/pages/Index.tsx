@@ -4,12 +4,17 @@ import { QuestionFlow } from "@/components/QuestionFlow";
 import { MarkdownOutput } from "@/components/MarkdownOutput";
 import { Celebration } from "@/components/Celebration";
 import { ShortcutSetup } from "@/components/ShortcutSetup";
-import { Anchor, Settings } from "lucide-react";
+import { Anchor, Settings, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { User, Session } from "@supabase/supabase-js";
 import type { CaptureData } from "@/types/capture";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showShortcutSetup, setShowShortcutSetup] = useState(false);
   const [step, setStep] = useState<"capture" | "flow" | "output" | "celebrate">("capture");
   const [transcript, setTranscript] = useState("");
@@ -21,12 +26,51 @@ const Index = () => {
   });
 
   useEffect(() => {
-    // Check if shortcut setup has been completed
-    const setupComplete = localStorage.getItem("shortcut_setup_complete");
-    if (!setupComplete) {
-      setShowShortcutSetup(true);
-    }
-  }, []);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (!session) {
+          navigate("/auth");
+        }
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (!session) {
+        navigate("/auth");
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    // Check if user has preferences set
+    const checkPreferences = async () => {
+      const { data } = await supabase
+        .from("user_preferences")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      if (!data) {
+        setShowShortcutSetup(true);
+      }
+    };
+    
+    checkPreferences();
+  }, [user]);
 
   const handleVoiceCapture = (text: string) => {
     setTranscript(text);
@@ -51,6 +95,19 @@ const Index = () => {
   const handleShortcutSetupComplete = () => {
     setShowShortcutSetup(false);
   };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-ocean-deep via-ocean-mid to-ocean-bright flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ocean-deep via-ocean-mid to-ocean-bright">
@@ -77,6 +134,13 @@ const Index = () => {
             >
               <Settings className="w-5 h-5" />
             </button>
+            <button
+              onClick={handleLogout}
+              className="text-accent hover:text-accent/80 transition-colors"
+              aria-label="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </header>
@@ -85,7 +149,7 @@ const Index = () => {
       <div className="pt-20 pb-8 px-4">
         <div className="container mx-auto max-w-2xl">
           {showShortcutSetup ? (
-            <ShortcutSetup onComplete={handleShortcutSetupComplete} />
+            <ShortcutSetup onComplete={handleShortcutSetupComplete} userId={user?.id} />
           ) : (
             <>
               {step === "capture" && <VoiceCapture onTranscript={handleVoiceCapture} />}
@@ -99,6 +163,7 @@ const Index = () => {
                 <MarkdownOutput
                   captureData={captureData}
                   onComplete={handleOutputComplete}
+                  userId={user?.id}
                 />
               )}
               {step === "celebrate" && <Celebration onReset={handleReset} />}
