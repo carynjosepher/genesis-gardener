@@ -107,7 +107,7 @@ export default function Auth() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
               />
             </div>
 
@@ -119,14 +119,14 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-ocean hover:bg-white/90"
+              className="w-full bg-accent text-ocean-deep hover:bg-accent/90 font-semibold"
             >
               {loading ? "Processing..." : isLogin ? "Log In" : "Sign Up"}
             </Button>
