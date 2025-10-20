@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Book, FileText, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { openConnectToNotes } from "@/lib/notes";
 
 interface ShortcutSetupProps {
   onComplete: () => void;
@@ -16,8 +17,7 @@ export const ShortcutSetup = ({ onComplete, userId }: ShortcutSetupProps) => {
 
   const handleConnectNotes = async () => {
     // Open iCloud link to install the shortcut
-    const installUrl = "https://www.icloud.com/shortcuts/d5e655c0e0e345908656aa098a81a1e2";
-    window.location.href = installUrl;
+    openConnectToNotes();
     
     // Mark as connected and save to database
     setConnectedService("notes");

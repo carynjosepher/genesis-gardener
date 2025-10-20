@@ -4,6 +4,7 @@ import { Download, Mail, Copy, Check, Book, Share2, Calendar as CalendarIcon } f
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { CaptureData } from "@/types/capture";
+import { addToAppleNotes } from "@/lib/notes";
 interface MarkdownOutputProps {
   captureData: CaptureData;
   onComplete: () => void;
@@ -174,40 +175,14 @@ export const MarkdownOutput = ({
     }
   };
 
-  const handleSendToAppleNotes = async () => {
-    // Fallback method that works on iOS
-    const textArea = document.createElement('textarea');
-    textArea.value = markdown;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
+  const handleSendToAppleNotes = () => {
+    addToAppleNotes(markdown);
     
-    try {
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      
-      toast({
-        title: "✓ Copied to Clipboard!",
-        description: "Open Apple Notes and paste (long-press and select Paste)",
-        duration: 7000,
-      });
-    } catch (error) {
-      document.body.removeChild(textArea);
-      // Try modern API as fallback
-      try {
-        await navigator.clipboard.writeText(markdown);
-        toast({
-          title: "✓ Copied to Clipboard!",
-          description: "Open Apple Notes and paste (long-press and select Paste)",
-          duration: 7000,
-        });
-      } catch (e) {
-        console.error("Copy error:", e);
-      }
-    }
+    toast({
+      title: "✓ Opening Apple Notes",
+      description: "Your note is being added to Apple Notes",
+      duration: 3000,
+    });
   };
 
   const convertToDate = (whenString: string): Date => {
