@@ -87,15 +87,15 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ocean-dark via-ocean to-ocean-light flex items-center justify-center p-4">
+    <div className="min-h-screen bg-ocean-deep flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Chaos Captain</h1>
-          <p className="text-ocean-light">Tame your thoughts</p>
+          <p className="text-white/80 text-lg">Tame your thoughts</p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-[var(--shadow-card)]">
-          <h2 className="text-2xl font-bold text-white mb-6">
+        <div className="bg-white rounded-2xl p-8 shadow-2xl">
+          <h2 className="text-2xl font-bold text-ocean-deep mb-6">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
 
@@ -107,7 +107,7 @@ export default function Auth() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
+                className="bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-500"
               />
             </div>
 
@@ -119,14 +119,14 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
+                className="bg-gray-50 border-gray-300 text-gray-900 placeholder:text-gray-500"
               />
             </div>
 
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-accent text-ocean-deep hover:bg-accent/90 font-semibold"
+              className="w-full bg-accent text-white hover:bg-accent/90 font-semibold text-lg h-12"
             >
               {loading ? "Processing..." : isLogin ? "Log In" : "Sign Up"}
             </Button>
@@ -135,7 +135,7 @@ export default function Auth() {
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-white/70 hover:text-white text-sm"
+              className="text-ocean-mid hover:text-ocean-deep text-sm font-medium"
             >
               {isLogin
                 ? "Need an account? Sign up"
