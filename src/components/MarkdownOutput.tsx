@@ -208,20 +208,10 @@ export const MarkdownOutput = ({
       // Convert the when string to an actual date
       const eventDate = convertToDate(captureData.when);
       
-      // Format date in multiple ways for iOS Shortcuts compatibility
-      const year = eventDate.getFullYear();
-      const month = String(eventDate.getMonth() + 1).padStart(2, '0');
-      const day = String(eventDate.getDate()).padStart(2, '0');
-      const hours = String(eventDate.getHours()).padStart(2, '0');
-      const minutes = String(eventDate.getMinutes()).padStart(2, '0');
-      
-      // Create event data with multiple date formats
+      // Create event data with ISO date for easy parsing
       const eventData = JSON.stringify({
         title: title,
-        date: `${year}-${month}-${day}`,
-        time: `${hours}:${minutes}`,
-        startDate: `${year}-${month}-${day} ${hours}:${minutes}`,
-        isoDate: eventDate.toISOString(),
+        startDate: eventDate.toISOString(),
         notes: notes,
         tags: captureData.tags.join(", ")
       });
