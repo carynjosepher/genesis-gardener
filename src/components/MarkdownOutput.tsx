@@ -20,6 +20,28 @@ export const MarkdownOutput = ({
   useEffect(() => {
     generateMarkdown();
     checkNotionConnection();
+    
+    // Auto-save flow
+    const autoSave = async () => {
+      // Wait a moment for markdown to generate
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Auto-create calendar event if date is set
+      if (captureData.when && captureData.when !== "I'll find it when I need it") {
+        handleAddToCalendar();
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+      
+      // Auto-send to Apple Notes
+      handleSendToAppleNotes();
+      
+      // Auto-complete after a delay
+      setTimeout(() => {
+        onComplete();
+      }, 2000);
+    };
+    
+    autoSave();
   }, [captureData]);
 
   const checkNotionConnection = () => {
