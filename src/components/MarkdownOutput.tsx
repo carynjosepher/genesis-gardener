@@ -176,29 +176,36 @@ export const MarkdownOutput = ({
 
   const handleSendToAppleNotes = async () => {
     try {
-      // Copy note to clipboard first
+      // Copy note to clipboard
       await navigator.clipboard.writeText(markdown);
       
-      // Small delay to ensure clipboard is set
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Open the shortcut - it will read from clipboard
-      const link = document.createElement('a');
-      link.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes`;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      toast({
-        title: "Opening Apple Notes!",
-        description: "Your note is on the clipboard",
-      });
+      // Try to open the shortcut if it exists
+      try {
+        const link = document.createElement('a');
+        link.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Note Copied!",
+          description: "Opening shortcut to save to Apple Notes",
+          duration: 3000,
+        });
+      } catch (shortcutError) {
+        // If shortcut fails, just let them know it's on clipboard
+        toast({
+          title: "Note Copied to Clipboard!",
+          description: "Paste it into Apple Notes manually",
+          duration: 5000,
+        });
+      }
     } catch (error) {
       console.error("Apple Notes error:", error);
       toast({
         title: "Error",
-        description: "Could not process note. Make sure the Chaos Captain shortcut is installed.",
+        description: "Could not copy note to clipboard",
         variant: "destructive",
       });
     }
