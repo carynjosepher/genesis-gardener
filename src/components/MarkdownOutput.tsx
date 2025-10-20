@@ -20,6 +20,11 @@ export const MarkdownOutput = ({
   useEffect(() => {
     generateMarkdown();
     checkNotionConnection();
+    
+    // Automatically add to calendar if a date is selected
+    if (captureData.when && captureData.when !== "I'll find it when I need it") {
+      handleAddToCalendar();
+    }
   }, [captureData]);
 
   const checkNotionConnection = () => {
@@ -159,15 +164,57 @@ export const MarkdownOutput = ({
     }
   };
 
+  const convertToDate = (whenString: string): Date => {
+    const now = new Date();
+    
+    switch (whenString) {
+      case "Tomorrow":
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+        return tomorrow;
+        
+      case "Next week":
+        const nextWeek = new Date(now);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        nextWeek.setHours(9, 0, 0, 0);
+        return nextWeek;
+        
+      case "Next month":
+        const nextMonth = new Date(now);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        nextMonth.setHours(9, 0, 0, 0);
+        return nextMonth;
+        
+      default:
+        // If it's a custom date, try to parse it
+        const parsed = new Date(whenString);
+        if (!isNaN(parsed.getTime())) {
+          return parsed;
+        }
+        // Fallback to tomorrow if parsing fails
+        const fallback = new Date(now);
+        fallback.setDate(fallback.getDate() + 1);
+        fallback.setHours(9, 0, 0, 0);
+        return fallback;
+    }
+  };
+
   const handleAddToCalendar = async () => {
     try {
       const title = captureData.what.split("\n")[0] || "Chaos Captain Event";
       const notes = `${captureData.what}\n\n${captureData.why}`;
       
+      // Convert the when string to an actual date
+      const eventDate = convertToDate(captureData.when);
+      
+      // Format as ISO string for Calendar
+      const isoDate = eventDate.toISOString();
+      
       // Create event data
       const eventData = JSON.stringify({
         title: title,
-        date: captureData.when,
+        date: isoDate,
         notes: notes,
         tags: captureData.tags.join(", ")
       });
@@ -192,8 +239,8 @@ export const MarkdownOutput = ({
       window.location.href = 'shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Calendar&input=clipboard';
       
       toast({
-        title: "JSON Copied!",
-        description: "Opening Shortcuts to create event",
+        title: "Adding to Calendar!",
+        description: "Creating event for " + eventDate.toLocaleDateString(),
       });
       
     } catch (error) {
@@ -285,16 +332,6 @@ export const MarkdownOutput = ({
           <Book className="w-4 h-4 mr-2" />
           Apple Notes
         </Button>
-        {captureData.when && captureData.when !== "I'll find it when I need it" && (
-          <Button 
-            onClick={handleAddToCalendar} 
-            variant="outline" 
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-          >
-            <CalendarIcon className="w-4 h-4 mr-2" />
-            Add to Calendar
-          </Button>
-        )}
         {isNotionConnected && (
           <Button 
             onClick={handleSendToNotion}
