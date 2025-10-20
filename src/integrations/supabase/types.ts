@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          notion_api_key: string | null
+          notion_database_id: string | null
+          storage_service: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notion_api_key?: string | null
+          notion_database_id?: string | null
+          storage_service: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notion_api_key?: string | null
+          notion_database_id?: string | null
+          storage_service?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
