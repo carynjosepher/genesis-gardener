@@ -20,11 +20,6 @@ export const MarkdownOutput = ({
   useEffect(() => {
     generateMarkdown();
     checkNotionConnection();
-    
-    // Automatically add to calendar if a date is selected
-    if (captureData.when && captureData.when !== "I'll find it when I need it") {
-      handleAddToCalendar();
-    }
   }, [captureData]);
 
   const checkNotionConnection = () => {
@@ -177,22 +172,35 @@ export const MarkdownOutput = ({
         tags: captureData.tags.join(", ")
       });
       
-      // Copy to clipboard and trigger shortcut
+      console.log("Calendar JSON:", eventData);
+      
+      // Copy to clipboard with confirmation
       await navigator.clipboard.writeText(eventData);
+      
+      // Wait a moment to ensure clipboard write completes
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Verify clipboard contents
+      const clipboardCheck = await navigator.clipboard.readText();
+      console.log("Clipboard contents:", clipboardCheck);
+      
+      if (clipboardCheck !== eventData) {
+        throw new Error("Clipboard verification failed");
+      }
+      
+      // Now trigger the shortcut
       window.location.href = 'shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Calendar&input=clipboard';
       
       toast({
-        title: "Adding to Calendar!",
-        description: "Creating your calendar event",
+        title: "JSON Copied!",
+        description: "Opening Shortcuts to create event",
       });
       
-      setTimeout(() => {
-        onComplete();
-      }, 1500);
     } catch (error) {
+      console.error("Calendar error:", error);
       toast({
         title: "Error",
-        description: "Could not create calendar event",
+        description: "Could not prepare calendar event",
         variant: "destructive",
       });
     }
@@ -277,6 +285,16 @@ export const MarkdownOutput = ({
           <Book className="w-4 h-4 mr-2" />
           Apple Notes
         </Button>
+        {captureData.when && captureData.when !== "I'll find it when I need it" && (
+          <Button 
+            onClick={handleAddToCalendar} 
+            variant="outline" 
+            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+          >
+            <CalendarIcon className="w-4 h-4 mr-2" />
+            Add to Calendar
+          </Button>
+        )}
         {isNotionConnected && (
           <Button 
             onClick={handleSendToNotion}
