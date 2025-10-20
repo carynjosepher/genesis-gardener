@@ -181,7 +181,8 @@ export const MarkdownOutput = ({
       
       // Pass text directly to the shortcut's receive block
       const encodedText = encodeURIComponent(markdown);
-      window.location.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=text&text=${encodedText}`;
+      // Use window.open to avoid navigation and allow flow to continue
+      window.open(`shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=text&text=${encodedText}`, '_blank');
       
       toast({
         title: "Sent to Apple Notes!",
