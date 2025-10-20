@@ -176,37 +176,49 @@ export const MarkdownOutput = ({
 
   const handleSendToAppleNotes = async () => {
     try {
-      // Copy note to clipboard
-      await navigator.clipboard.writeText(markdown);
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(markdown);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = markdown;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
       
       // Try to open the shortcut if it exists
-      try {
-        const link = document.createElement('a');
-        link.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes`;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-          title: "Note Copied!",
-          description: "Opening shortcut to save to Apple Notes",
-          duration: 3000,
-        });
-      } catch (shortcutError) {
-        // If shortcut fails, just let them know it's on clipboard
-        toast({
-          title: "Note Copied to Clipboard!",
-          description: "Paste it into Apple Notes manually",
-          duration: 5000,
-        });
-      }
+      setTimeout(() => {
+        try {
+          const link = document.createElement('a');
+          link.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes`;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (shortcutError) {
+          console.log("Shortcut not available:", shortcutError);
+        }
+      }, 100);
+      
+      toast({
+        title: "Note Copied!",
+        description: "Tap to open Apple Notes and paste",
+        duration: 5000,
+      });
     } catch (error) {
       console.error("Apple Notes error:", error);
+      // Show the note content directly so they can at least see it
       toast({
-        title: "Error",
-        description: "Could not copy note to clipboard",
-        variant: "destructive",
+        title: "Note Ready",
+        description: "Long-press to copy the note text above",
+        duration: 5000,
       });
     }
   };
