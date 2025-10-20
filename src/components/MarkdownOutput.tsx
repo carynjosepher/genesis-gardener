@@ -193,31 +193,16 @@ export const MarkdownOutput = ({
         document.body.removeChild(textArea);
       }
       
-      // Try to open the shortcut if it exists
-      setTimeout(() => {
-        try {
-          const link = document.createElement('a');
-          link.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes`;
-          link.style.display = 'none';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        } catch (shortcutError) {
-          console.log("Shortcut not available:", shortcutError);
-        }
-      }, 100);
-      
       toast({
-        title: "Note Copied!",
-        description: "Tap to open Apple Notes and paste",
-        duration: 5000,
+        title: "✓ Copied to Clipboard!",
+        description: "Open Apple Notes and paste (long-press and select Paste)",
+        duration: 7000,
       });
     } catch (error) {
-      console.error("Apple Notes error:", error);
-      // Show the note content directly so they can at least see it
+      console.error("Copy error:", error);
       toast({
-        title: "Note Ready",
-        description: "Long-press to copy the note text above",
+        title: "Copy the note above",
+        description: "Long-press the text to copy it manually",
         duration: 5000,
       });
     }
