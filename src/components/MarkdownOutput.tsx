@@ -20,6 +20,11 @@ export const MarkdownOutput = ({
   useEffect(() => {
     generateMarkdown();
     checkNotionConnection();
+    
+    // Automatically add to calendar if a date is selected
+    if (captureData.when && captureData.when !== "I'll find it when I need it") {
+      handleAddToCalendar();
+    }
   }, [captureData]);
 
   const checkNotionConnection = () => {
@@ -272,16 +277,6 @@ export const MarkdownOutput = ({
           <Book className="w-4 h-4 mr-2" />
           Apple Notes
         </Button>
-        {captureData.when && captureData.when !== "I'll find it when I need it" && (
-          <Button 
-            onClick={handleAddToCalendar} 
-            variant="outline" 
-            className="border-white/20 bg-white/10 text-white hover:bg-white/20"
-          >
-            <CalendarIcon className="w-4 h-4 mr-2" />
-            Add to Calendar
-          </Button>
-        )}
         {isNotionConnected && (
           <Button 
             onClick={handleSendToNotion}
