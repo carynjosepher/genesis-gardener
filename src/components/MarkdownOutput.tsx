@@ -174,22 +174,25 @@ export const MarkdownOutput = ({
     }
   };
 
-  const handleSendToAppleNotes = () => {
+  const handleSendToAppleNotes = async () => {
     try {
-      // Pass text directly to the shortcut's receive block
-      const encodedText = encodeURIComponent(markdown);
+      // Copy note to clipboard first
+      await navigator.clipboard.writeText(markdown);
       
-      // Create a temporary link element and click it (more reliable on iOS)
+      // Small delay to ensure clipboard is set
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Open the shortcut - it will read from clipboard
       const link = document.createElement('a');
-      link.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=text&text=${encodedText}`;
+      link.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes`;
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
       toast({
-        title: "Sent to Apple Notes!",
-        description: "Your note has been saved",
+        title: "Opening Apple Notes!",
+        description: "Your note is on the clipboard",
       });
     } catch (error) {
       console.error("Apple Notes error:", error);
