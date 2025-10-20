@@ -145,11 +145,6 @@ export const MarkdownOutput = ({
         title: "Sent to Apple Notes!",
         description: "Your note has been saved",
       });
-      
-      // Complete the flow after a brief delay
-      setTimeout(() => {
-        onComplete();
-      }, 1500);
     } catch (error) {
       toast({
         title: "Error",
@@ -357,6 +352,16 @@ export const MarkdownOutput = ({
             {isSendingToNotion ? "Sending..." : "Send to Notion"}
           </Button>
         )}
+      </div>
+      
+      {/* Done Button */}
+      <div className="flex justify-center pt-4">
+        <Button 
+          onClick={onComplete}
+          className="bg-white/20 text-white hover:bg-white/30"
+        >
+          Done
+        </Button>
       </div>
     </div>;
 };
