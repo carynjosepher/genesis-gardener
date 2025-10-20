@@ -175,23 +175,19 @@ export const MarkdownOutput = ({
   };
 
   const handleSendToAppleNotes = async () => {
+    // Fallback method that works on iOS
+    const textArea = document.createElement('textarea');
+    textArea.value = markdown;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
     try {
-      // Try modern clipboard API first
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(markdown);
-      } else {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = markdown;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-      }
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
       
       toast({
         title: "✓ Copied to Clipboard!",
@@ -199,12 +195,18 @@ export const MarkdownOutput = ({
         duration: 7000,
       });
     } catch (error) {
-      console.error("Copy error:", error);
-      toast({
-        title: "Copy the note above",
-        description: "Long-press the text to copy it manually",
-        duration: 5000,
-      });
+      document.body.removeChild(textArea);
+      // Try modern API as fallback
+      try {
+        await navigator.clipboard.writeText(markdown);
+        toast({
+          title: "✓ Copied to Clipboard!",
+          description: "Open Apple Notes and paste (long-press and select Paste)",
+          duration: 7000,
+        });
+      } catch (e) {
+        console.error("Copy error:", e);
+      }
     }
   };
 
