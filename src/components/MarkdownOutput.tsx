@@ -202,34 +202,61 @@ export const MarkdownOutput = ({
 
   const handleAddToCalendar = () => {
     try {
-      const title = encodeURIComponent(captureData.what.split("\n")[0] || "Chaos Captain Event");
-      const notesText = encodeURIComponent(`${captureData.what}\n\n${captureData.why}\n\nTags: ${captureData.tags.join(", ")}`);
+      const title = captureData.what.split("\n")[0] || "Chaos Captain Event";
+      const description = `${captureData.what}\\n\\n${captureData.why}\\n\\nTags: ${captureData.tags.join(", ")}`;
       
       // Convert the when string to an actual date
       const eventDate = convertToDate(captureData.when);
       
-      // Format date for calendar URL (yyyyMMddTHHmmss)
-      const year = eventDate.getFullYear();
-      const month = String(eventDate.getMonth() + 1).padStart(2, '0');
-      const day = String(eventDate.getDate()).padStart(2, '0');
-      const hours = String(eventDate.getHours()).padStart(2, '0');
-      const minutes = String(eventDate.getMinutes()).padStart(2, '0');
-      const startDate = `${year}${month}${day}T${hours}${minutes}00`;
+      // Create end date (1 hour after start)
+      const endDate = new Date(eventDate);
+      endDate.setHours(endDate.getHours() + 1);
       
-      // Use iOS Calendar URL scheme - opens calendar directly
-      const calendarUrl = `calshow:?start_date=${startDate}&title=${title}&notes=${notesText}`;
+      // Format dates for iCal (yyyyMMddTHHmmssZ)
+      const formatICalDate = (date: Date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
       
-      window.location.href = calendarUrl;
+      const startDateStr = formatICalDate(eventDate);
+      const endDateStr = formatICalDate(endDate);
+      const nowStr = formatICalDate(new Date());
+      
+      // Create iCal format (.ics file)
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Chaos Captain//EN',
+        'BEGIN:VEVENT',
+        `UID:${nowStr}@chaoscaptain.app`,
+        `DTSTAMP:${nowStr}`,
+        `DTSTART:${startDateStr}`,
+        `DTEND:${endDateStr}`,
+        `SUMMARY:${title}`,
+        `DESCRIPTION:${description}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+      
+      // Create blob and download
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'chaos-captain-event.ics';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
       toast({
-        title: "Opening Calendar...",
-        description: "Event: " + eventDate.toLocaleDateString(),
+        title: "Calendar File Created!",
+        description: "Tap the file to add to your calendar",
       });
     } catch (error) {
       console.error("Calendar error:", error);
       toast({
         title: "Error",
-        description: "Could not open calendar",
+        description: "Could not create calendar event",
         variant: "destructive",
       });
     }
