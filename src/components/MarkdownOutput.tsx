@@ -174,24 +174,28 @@ export const MarkdownOutput = ({
     }
   };
 
-  const handleSendToAppleNotes = async () => {
+  const handleSendToAppleNotes = () => {
     try {
-      // Copy to clipboard first as backup
-      await navigator.clipboard.writeText(markdown);
-      
       // Pass text directly to the shortcut's receive block
       const encodedText = encodeURIComponent(markdown);
-      // Use window.open to avoid navigation and allow flow to continue
-      window.open(`shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=text&text=${encodedText}`, '_blank');
+      
+      // Create a temporary link element and click it (more reliable on iOS)
+      const link = document.createElement('a');
+      link.href = `shortcuts://run-shortcut?name=Chaos%20Captain%20to%20Notes&input=text&text=${encodedText}`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
       toast({
         title: "Sent to Apple Notes!",
         description: "Your note has been saved",
       });
     } catch (error) {
+      console.error("Apple Notes error:", error);
       toast({
         title: "Error",
-        description: "Could not process note",
+        description: "Could not process note. Make sure the Chaos Captain shortcut is installed.",
         variant: "destructive",
       });
     }
