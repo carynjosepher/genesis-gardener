@@ -15,17 +15,24 @@ export async function openConnectToNotes() {
 }
 
 export async function addToAppleNotes(text: string) {
+  console.log("addToAppleNotes called with text length:", text?.length);
   const encoded = encodeURIComponent(text ?? "");
   const url =
     `shortcuts://x-callback-url/run-shortcut` +
     `?name=Chaos%20Captain%20to%20Notes` +
     `&input=${encoded}`;
 
+  console.log("Shortcut URL:", url.substring(0, 100) + "...");
+  console.log("Is native platform:", Capacitor.isNativePlatform());
+
   try {
     if (Capacitor.isNativePlatform()) {
+      console.log("Using AppLauncher to open shortcut");
       // Use AppLauncher for custom URL schemes on native platforms
       await AppLauncher.openUrl({ url });
+      console.log("AppLauncher.openUrl completed");
     } else {
+      console.log("Using window.open fallback");
       // Fallback for web
       window.open(url, "_system");
     }

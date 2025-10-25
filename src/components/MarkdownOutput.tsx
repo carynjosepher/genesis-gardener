@@ -22,53 +22,88 @@ export const MarkdownOutput = ({
   const [userPreference, setUserPreference] = useState<string | null>(null);
   const { toast } = useToast();
   useEffect(() => {
+    console.log("MarkdownOutput mounted, captureData:", captureData);
     const md = generateMarkdown(); // Get the markdown immediately
     checkNotionConnection();
     
     // Load user preference and auto-save
     const autoSave = async () => {
-      if (!userId) return;
+      if (!userId) {
+        console.log("No userId, skipping auto-save");
+        return;
+      }
+      
+      console.log("Fetching user preferences for userId:", userId);
       
       // Get user's storage preference
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("user_preferences")
         .select("storage_service")
         .eq("user_id", userId)
         .maybeSingle();
       
+      console.log("User preferences:", data, "error:", error);
+      
       if (data?.storage_service) {
         setUserPreference(data.storage_service);
+        console.log("User preference set to:", data.storage_service);
         
         // Auto-create calendar event if date is set
         if (captureData.when && captureData.when !== "I'll find it when I need it") {
-          handleAddToCalendar();
-          await new Promise(resolve => setTimeout(resolve, 800));
+          console.log("Creating calendar event for:", captureData.when);
+          try {
+            await handleAddToCalendar();
+            console.log("Calendar event created successfully");
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          } catch (error) {
+            console.error("Failed to create calendar event:", error);
+            toast({
+              title: "Calendar Error",
+              description: "Could not create calendar event",
+              variant: "destructive",
+            });
+          }
         }
         
         // Auto-save based on preference
         if (data.storage_service === "apple_notes") {
+          console.log("Auto-saving to Apple Notes");
           try {
             await addToAppleNotes(md);
+            console.log("Apple Notes called successfully");
             toast({
               title: "✓ Opening Apple Notes",
               description: "Your note is being added to Apple Notes",
               duration: 3000,
             });
+            await new Promise(resolve => setTimeout(resolve, 1000));
           } catch (error) {
             console.error("Auto-save to Apple Notes failed:", error);
+            toast({
+              title: "Apple Notes Error",
+              description: "Could not open Apple Notes. Make sure the shortcut is installed.",
+              variant: "destructive",
+            });
           }
         } else if (data.storage_service === "notion") {
+          console.log("Auto-saving to Notion");
           await handleSendToNotion();
         }
         
-        // Auto-complete after a delay
+        // Auto-complete after a longer delay to ensure actions complete
+        console.log("Waiting before auto-complete...");
         setTimeout(() => {
+          console.log("Auto-completing flow");
           onComplete();
-        }, 2000);
+        }, 3000);
+      } else {
+        console.log("No storage service preference set");
       }
     };
     
-    autoSave();
+    autoSave().catch(error => {
+      console.error("Error in autoSave:", error);
+    });
   }, [captureData, userId]);
 
   const checkNotionConnection = () => {
@@ -91,7 +126,8 @@ export const MarkdownOutput = ({
     md += `${captureData.why}\n\n`;
     
     if (captureData.tags.length > 0) {
-      md += captureData.tags.map(tag => `#${tag}`).join(" ");
+      // Tags already have # from QuestionFlow, don't add another #
+      md += captureData.tags.join(" ");
       md += "\n\n";
     }
     
@@ -100,6 +136,8 @@ export const MarkdownOutput = ({
     }
     
     md += `Captured on ${dateStr}`;
+    
+    console.log("Generated markdown:", md);
     setMarkdown(md);
     return md; // Return the markdown so it can be used immediately
   };
@@ -238,12 +276,17 @@ export const MarkdownOutput = ({
   };
 
   const handleAddToCalendar = async () => {
+    console.log("handleAddToCalendar called with when:", captureData.when);
     try {
       const title = captureData.what.split("\n")[0] || "Chaos Captain Event";
       const description = `${captureData.what}\\n\\n${captureData.why}\\n\\nTags: ${captureData.tags.join(", ")}`;
       
+      console.log("Calendar event title:", title);
+      console.log("Calendar event description:", description);
+      
       // Convert the when string to an actual date
       const eventDate = convertToDate(captureData.when);
+      console.log("Event date:", eventDate);
       
       // Create end date (1 hour after start)
       const endDate = new Date(eventDate);
@@ -257,6 +300,8 @@ export const MarkdownOutput = ({
       const startDateStr = formatICalDate(eventDate);
       const endDateStr = formatICalDate(endDate);
       const nowStr = formatICalDate(new Date());
+      
+      console.log("Formatted dates - start:", startDateStr, "end:", endDateStr);
       
       // Create iCal format (.ics file)
       const icsContent = [
@@ -274,35 +319,44 @@ export const MarkdownOutput = ({
         'END:VCALENDAR'
       ].join('\r\n');
       
+      console.log("ICS content created, length:", icsContent.length);
+      
       // Check if we're on a native platform
       const { Capacitor } = await import('@capacitor/core');
+      console.log("Capacitor.isNativePlatform():", Capacitor.isNativePlatform());
       
       if (Capacitor.isNativePlatform()) {
+        console.log("Using native Share API");
         // Use Share API for native platforms
         const { Share } = await import('@capacitor/share');
         const { Filesystem, Directory } = await import('@capacitor/filesystem');
         
         // Write .ics file to temp directory
         const fileName = 'chaos-captain-event.ics';
+        console.log("Writing file:", fileName);
         const result = await Filesystem.writeFile({
           path: fileName,
           data: icsContent,
           directory: Directory.Cache,
         });
+        console.log("File written, uri:", result.uri);
         
         // Share the file
+        console.log("Sharing file...");
         await Share.share({
           title: 'Add to Calendar',
           text: title,
           url: result.uri,
           dialogTitle: 'Add Event to Calendar',
         });
+        console.log("Share completed");
         
         toast({
           title: "Calendar Event Ready!",
           description: "Select Calendar from the share menu",
         });
       } else {
+        console.log("Using web fallback for calendar");
         // Fallback for web: download the file
         const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
         const url = URL.createObjectURL(blob);
@@ -323,9 +377,10 @@ export const MarkdownOutput = ({
       console.error("Calendar error:", error);
       toast({
         title: "Error",
-        description: "Could not create calendar event",
+        description: `Could not create calendar event: ${error}`,
         variant: "destructive",
       });
+      throw error; // Re-throw so the calling function knows it failed
     }
   };
   return <div className="space-y-6 animate-fade-in">
