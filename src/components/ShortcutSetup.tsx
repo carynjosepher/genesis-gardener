@@ -17,7 +17,7 @@ export const ShortcutSetup = ({ onComplete, userId }: ShortcutSetupProps) => {
 
   const handleConnectNotes = async () => {
     // Open iCloud link to install the shortcut
-    openConnectToNotes();
+    await openConnectToNotes();
     
     // Mark as connected and save to database
     setConnectedService("notes");

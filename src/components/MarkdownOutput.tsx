@@ -47,12 +47,16 @@ export const MarkdownOutput = ({
         
         // Auto-save based on preference
         if (data.storage_service === "apple_notes") {
-          addToAppleNotes(md); // Use the markdown directly instead of state
-          toast({
-            title: "✓ Opening Apple Notes",
-            description: "Your note is being added to Apple Notes",
-            duration: 3000,
-          });
+          try {
+            await addToAppleNotes(md);
+            toast({
+              title: "✓ Opening Apple Notes",
+              description: "Your note is being added to Apple Notes",
+              duration: 3000,
+            });
+          } catch (error) {
+            console.error("Auto-save to Apple Notes failed:", error);
+          }
         } else if (data.storage_service === "notion") {
           await handleSendToNotion();
         }
@@ -178,14 +182,23 @@ export const MarkdownOutput = ({
     }
   };
 
-  const handleSendToAppleNotes = () => {
-    addToAppleNotes(markdown);
-    
-    toast({
-      title: "✓ Opening Apple Notes",
-      description: "Your note is being added to Apple Notes",
-      duration: 3000,
-    });
+  const handleSendToAppleNotes = async () => {
+    try {
+      await addToAppleNotes(markdown);
+      
+      toast({
+        title: "✓ Opening Apple Notes",
+        description: "Your note is being added to Apple Notes",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Error opening Apple Notes:", error);
+      toast({
+        title: "Error",
+        description: "Could not open Apple Notes. Make sure the shortcut is installed.",
+        variant: "destructive",
+      });
+    }
   };
 
   const convertToDate = (whenString: string): Date => {
@@ -224,7 +237,7 @@ export const MarkdownOutput = ({
     }
   };
 
-  const handleAddToCalendar = () => {
+  const handleAddToCalendar = async () => {
     try {
       const title = captureData.what.split("\n")[0] || "Chaos Captain Event";
       const description = `${captureData.what}\\n\\n${captureData.why}\\n\\nTags: ${captureData.tags.join(", ")}`;
@@ -261,21 +274,51 @@ export const MarkdownOutput = ({
         'END:VCALENDAR'
       ].join('\r\n');
       
-      // Create blob and download
-      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'chaos-captain-event.ics';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Check if we're on a native platform
+      const { Capacitor } = await import('@capacitor/core');
       
-      toast({
-        title: "Calendar File Created!",
-        description: "Tap the file to add to your calendar",
-      });
+      if (Capacitor.isNativePlatform()) {
+        // Use Share API for native platforms
+        const { Share } = await import('@capacitor/share');
+        const { Filesystem, Directory } = await import('@capacitor/filesystem');
+        
+        // Write .ics file to temp directory
+        const fileName = 'chaos-captain-event.ics';
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: icsContent,
+          directory: Directory.Cache,
+        });
+        
+        // Share the file
+        await Share.share({
+          title: 'Add to Calendar',
+          text: title,
+          url: result.uri,
+          dialogTitle: 'Add Event to Calendar',
+        });
+        
+        toast({
+          title: "Calendar Event Ready!",
+          description: "Select Calendar from the share menu",
+        });
+      } else {
+        // Fallback for web: download the file
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'chaos-captain-event.ics';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Calendar File Created!",
+          description: "Tap the file to add to your calendar",
+        });
+      }
     } catch (error) {
       console.error("Calendar error:", error);
       toast({
