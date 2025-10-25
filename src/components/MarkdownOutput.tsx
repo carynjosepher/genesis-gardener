@@ -22,15 +22,12 @@ export const MarkdownOutput = ({
   const [userPreference, setUserPreference] = useState<string | null>(null);
   const { toast } = useToast();
   useEffect(() => {
-    generateMarkdown();
+    const md = generateMarkdown(); // Get the markdown immediately
     checkNotionConnection();
     
     // Load user preference and auto-save
     const autoSave = async () => {
       if (!userId) return;
-      
-      // Wait for markdown to generate
-      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Get user's storage preference
       const { data } = await supabase
@@ -50,7 +47,12 @@ export const MarkdownOutput = ({
         
         // Auto-save based on preference
         if (data.storage_service === "apple_notes") {
-          handleSendToAppleNotes();
+          addToAppleNotes(md); // Use the markdown directly instead of state
+          toast({
+            title: "✓ Opening Apple Notes",
+            description: "Your note is being added to Apple Notes",
+            duration: 3000,
+          });
         } else if (data.storage_service === "notion") {
           await handleSendToNotion();
         }
@@ -95,6 +97,7 @@ export const MarkdownOutput = ({
     
     md += `Captured on ${dateStr}`;
     setMarkdown(md);
+    return md; // Return the markdown so it can be used immediately
   };
   const handleCopy = async () => {
     try {
